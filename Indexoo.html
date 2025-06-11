@@ -1,0 +1,146 @@
+<!DOCTYPE html><html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <title>NoShadow Chat</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://i.pinimg.com/originals/17/2b/f8/172bf8a4eec91a2068c1b6b8b56ed6bb.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1, h2, p {
+      text-shadow: 1px 1px 2px #000;
+    }
+    #chat {
+      background: rgba(0,0,0,0.5);
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 0 10px #000;
+    }
+    input, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1em;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    li {
+      background: rgba(255,255,255,0.2);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat"></div><audio id="pigeon" src="https://www.soundjay.com/transport/sounds/pigeon-1.mp3" preload="auto"></audio>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, onSnapshot,
+      deleteDoc, doc, serverTimestamp, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    import {
+      getAuth, signInAnonymously, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDYPS5T0FPTx72RqrGjNbF0aeajf9pwVxI",
+      authDomain: "noshadow-66bc2.firebaseapp.com",
+      projectId: "noshadow-66bc2",
+      storageBucket: "noshadow-66bc2.appspot.com",
+      messagingSenderId: "914209521205",
+      appId: "1:914209521205:web:7aabffcfd2d889cfe07b7c",
+      measurementId: "G-MDF86GV58W"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let roomId = null;
+    const params = new URLSearchParams(location.search);
+    roomId = params.get("room");
+
+    const pigeonSound = document.getElementById("pigeon");
+
+    if (!roomId) {
+      roomId = Math.random().toString(36).substring(2, 10);
+      document.getElementById("chat").innerHTML = `
+        <h2>Odkaz ke sdílení:</h2>
+        <p><a href="?room=${roomId}" style="color:lightblue;">${location.href}?room=${roomId}</a></p>
+        <p>Pošli tento odkaz tomu, s kým si chceš anonymně psát.</p>
+      `;
+    } else {
+      signInAnonymously(auth).then(() => {
+        onAuthStateChanged(auth, user => {
+          if (user) {
+            currentUser = user;
+            showChatUI();
+            listenForMessages();
+          }
+        });
+      });
+    }
+
+    function showChatUI() {
+      document.getElementById("chat").innerHTML = `
+        <h1>NoShadow Chat – Místnost: ${roomId}</h1>
+        <input id="messageInput" placeholder="Napiš zprávu..." autocomplete="off" />
+        <button onclick="sendMessage()">Odeslat</button>
+        <ul id="messages"></ul>
+      `;
+    }
+
+    window.sendMessage = async function () {
+      const input = document.getElementById("messageInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      await addDoc(collection(db, "rooms", roomId, "messages"), {
+        text,
+        senderId: currentUser.uid,
+        timestamp: serverTimestamp()
+      });
+
+      pigeonSound.play();
+      input.value = "";
+    };
+
+    function listenForMessages() {
+      const q = query(collection(db, "rooms", roomId, "messages"), orderBy("timestamp"));
+      onSnapshot(q, (snapshot) => {
+        const list = document.getElementById("messages");
+        if (!list) return;
+        snapshot.forEach(async (docSnap) => {
+          const msg = docSnap.data();
+          if (msg.senderId !== currentUser.uid) {
+            const li = document.createElement("li");
+            li.textContent = msg.text;
+            list.appendChild(li);
+            pigeonSound.play();
+            await deleteDoc(doc(docSnap.ref));
+          }
+        });
+      });
+    }
+  </script></body>
+</html>

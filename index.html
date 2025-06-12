@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoShadow Chat</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: #000000; /* 🔥 Černé pozadí */
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .chat-container {
+      width: 360px;
+      padding: 20px;
+      background-color: rgba(30, 30, 30, 0.95);
+      border-radius: 10px;
+      box-shadow: 0 0 20px #00ffff;
+      text-align: center;
+      color: white;
+    }
+
+    .label {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .link-box {
+      background-color: #000;
+      color: #0ff;
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      word-wrap: break-word;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #ccc;
+      margin: 10px 0;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #ff3399;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #ff66b2;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="label">Odkaz pro sdílení:</div>
+    <div class="link-box" id="share-link">http://localhost:8159/primary/noshadow.eu/index.html?room=xyz</div>
+    <button onclick="copyLink()">Zkopírovat odkaz</button>
+    <div class="note">Pošli tento odkaz kamarádovi a můžete si anonymně psát.</div>
+    <input type="text" placeholder="Napiš zprávu..." />
+    <button>Odeslat</button>
+  </div>
+
+  <script>
+    function copyLink() {
+      const link = document.getElementById("share-link").innerText;
+      navigator.clipboard.writeText(link).then(() => {
+        alert("Odkaz zkopírován!");
+      });
+    }
+  </script>
+</body>
+</html>

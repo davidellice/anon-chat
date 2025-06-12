@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <title>NoShadow Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    #chat {
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 0 12px #0ff;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1em;
+      background: #0ff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0cc;
+    }
+    input {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+    }
+    p {
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat"></div>
+
+  <script type="module">
+    const params = new URLSearchParams(location.search);
+    let roomId = params.get("room");
+
+    if (!roomId) {
+      roomId = Math.random().toString(36).substring(2, 10);
+      const shareURL = `${location.origin}?room=${roomId}`;
+      document.getElementById("chat").innerHTML = `
+        <h2>Pošli tento odkaz tomu, s kým si chceš anonymně psát:</h2>
+        <p id="link">${shareURL}</p>
+        <button id="copyBtn">📋 Zkopírovat odkaz</button>
+      `;
+
+      document.getElementById("copyBtn").addEventListener("click", () => {
+        const link = document.getElementById("link").textContent;
+        navigator.clipboard.writeText(link)
+          .then(() => {
+            document.getElementById("copyBtn").textContent = "✅ Odkaz zkopírován!";
+          })
+          .catch(err => {
+            alert("Nepodařilo se zkopírovat odkaz. Zkopíruj ho ručně.");
+            console.error(err);
+          });
+      });
+    } else {
+      // Pokud už máme room, přepneme rovnou na chat (nebo můžeš přesměrovat)
+      location.href = `${location.origin}/?room=${roomId}`;
+    }
+  </script>
+</body>
+</html>
